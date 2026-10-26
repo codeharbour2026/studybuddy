@@ -1,0 +1,559 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyBuddy AI — Study Tools</title>
+<style>
+:root {
+  --blue: #4263eb;
+  --bg: #f4f6fb;
+  --card: #ffffff;
+  --text: #172033;
+  --muted: #65718a;
+  --border: #dfe5f0;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+header {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  padding: 18px 6%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+header a { color: var(--blue); text-decoration: none; font-weight: bold; }
+main { max-width: 1100px; margin: auto; padding: 28px 18px 60px; }
+h1 { margin-bottom: 8px; }
+.intro { color: var(--muted); line-height: 1.6; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+  margin-top: 24px;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  min-width: 0;
+}
+.card h2 { font-size: 20px; margin-top: 0; }
+.card p { color: var(--muted); line-height: 1.5; }
+label { display: block; font-weight: bold; margin: 14px 0 7px; }
+textarea, input, select {
+  width: 100%;
+  padding: 11px;
+  border: 1px solid #cbd4e4;
+  border-radius: 9px;
+  font: inherit;
+  background: white;
+  color: var(--text);
+}
+textarea { min-height: 115px; resize: vertical; }
+button {
+  background: var(--blue);
+  color: white;
+  border: 0;
+  padding: 11px 15px;
+  border-radius: 9px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 12px;
+}
+button.secondary { background: #e8edff; color: #2946b8; }
+button:focus, input:focus, textarea:focus, select:focus {
+  outline: 2px solid #8ea4ff;
+  outline-offset: 2px;
+}
+.output {
+  margin-top: 16px;
+  padding: 13px;
+  background: #f7f8fc;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.output:empty { display: none; }
+.small { font-size: 13px; color: var(--muted); }
+.flashcard {
+  border: 1px solid var(--border);
+  padding: 12px;
+  border-radius: 9px;
+  margin: 10px 0;
+  background: white;
+}
+.flashcard strong { display: block; margin-bottom: 6px; }
+.good { color: #187443; }
+.warn { color: #9a5700; }
+.feedback-item { margin: 10px 0; padding: 10px; border-left: 4px solid #e0a12d; background: white; }
+footer { text-align: center; color: var(--muted); padding: 20px; }
+</style>
+</head>
+<body>
+<header>
+  <strong>📘 StudyBuddy AI — Study Tools</strong>
+  <a href="./index.html">← Back to StudyBuddy</a>
+</header>
+
+<main>
+  <h1>Your study toolkit</h1>
+  <p class="intro">
+    Solve supported maths calculations, make flashcards, generate practice
+    quizzes and get writing feedback. These tools run in your browser, so
+    they do not need an API key or a school Google account.
+  </p>
+
+  <div class="grid">
+    <section class="card">
+      <h2>🧮 Maths Step Solver</h2>
+      <p>Enter a basic arithmetic calculation to see the working.</p>
+      <label for="mathInput">Calculation</label>
+      <input id="mathInput" placeholder="Example: (12 + 8) * 3">
+      <button id="solveMath">Solve calculation</button>
+      <div id="mathOutput" class="output" aria-live="polite"></div>
+      <p class="small">Supports numbers, brackets, +, −, ×, ÷, powers and percentages are not yet supported.</p>
+    </section>
+
+    <section class="card">
+      <h2>🗂️ Flashcard Generator</h2>
+      <p>Paste notes. The tool turns lines containing a colon into question-and-answer cards.</p>
+      <label for="flashInput">Your notes</label>
+      <textarea id="flashInput" placeholder="Photosynthesis: the process plants use to make glucose&#10;Gravity: a force that attracts objects with mass"></textarea>
+      <button id="makeFlashcards">Create flashcards</button>
+      <div id="flashOutput" class="output" aria-live="polite"></div>
+    </section>
+
+    <section class="card">
+      <h2>❓ Quiz Generator</h2>
+      <p>Make practice questions from your notes. Questions are based on sentences you provide.</p>
+      <label for="quizInput">Notes or topic facts</label>
+      <textarea id="quizInput" placeholder="The Moon orbits Earth. Plants use photosynthesis to make glucose."></textarea>
+      <label for="quizCount">Number of questions</label>
+      <select id="quizCount">
+        <option value="3">3 questions</option>
+        <option value="5" selected>5 questions</option>
+        <option value="10">10 questions</option>
+      </select>
+      <button id="makeQuiz">Create quiz</button>
+      <div id="quizOutput" class="output" aria-live="polite"></div>
+    </section>
+
+    <section class="card">
+      <h2>✍️ Writing Feedback</h2>
+      <p>Check for common grammar issues, sentence length and persuasive techniques.</p>
+      <label for="writingInput">Your writing</label>
+      <textarea id="writingInput" placeholder="Paste a paragraph or persuasive argument here..."></textarea>
+      <button id="checkWriting">Check my writing</button>
+      <div id="writingOutput" class="output" aria-live="polite"></div>
+    </section>
+  </div>
+</main>
+
+<footer>StudyBuddy AI · Free study tools</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+
+function showMessage(element, message) {
+  element.textContent = message;
+}
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;",
+    '"': "&quot;", "'": "&#39;"
+  })[char]);
+}
+
+/* ---------------- MATHS STEP SOLVER ---------------- */
+
+function calculate(expression) {
+  let s = expression
+    .replace(/[×x]/gi, "*")
+    .replace(/÷/g, "/")
+    .replace(/[−–]/g, "-")
+    .replace(/\^/g, "**")
+    .trim();
+
+  if (!s) throw Error("Enter a calculation first.");
+  if (s.length > 100) throw Error("Please use a shorter calculation.");
+  if (!/^[0-9+\-*/().\s*]+$/.test(s)) {
+    throw Error("Use numbers, brackets and +, −, ×, ÷ or ^ only.");
+  }
+  if (/\*\*/.test(s) && !/^[0-9+\-*/().\s*]+$/.test(s)) {
+    throw Error("That calculation contains unsupported characters.");
+  }
+  if (/[*/+\-.]{3,}/.test(s.replace(/\s/g, ""))) {
+    // Leave detailed syntax validation to the arithmetic parser below.
+  }
+
+  const tokens = s.match(/\d+(?:\.\d+)?|\*\*|[()+\-*/]/g) || [];
+  if (tokens.join("") !== s.replace(/\s/g, "")) {
+    throw Error("I couldn't read that calculation. Check the symbols.");
+  }
+
+  let pos = 0;
+  function primary() {
+    const t = tokens[pos++];
+    if (t === "(") {
+      const v = addSub();
+      if (tokens[pos++] !== ")") throw Error("Check your brackets.");
+      return v;
+    }
+    if (t === "+") return primary();
+    if (t === "-") return -primary();
+    if (!t || !/^\d+(?:\.\d+)?$/.test(t)) {
+      throw Error("Check the numbers and operators.");
+    }
+    return Number(t);
+  }
+  function power() {
+    let a = primary();
+    if (tokens[pos] === "**") {
+      pos++;
+      const b = power();
+      if (Math.abs(b) > 10 || Math.abs(a) > 1e9) {
+        throw Error("That power is too large to calculate here.");
+      }
+      a = a ** b;
+    }
+    return a;
+  }
+  function multiplyDivide() {
+    let a = power();
+    while (tokens[pos] === "*" || tokens[pos] === "/") {
+      const op = tokens[pos++];
+      const b = power();
+      if (op === "/" && b === 0) throw Error("You cannot divide by zero.");
+      a = op === "*" ? a * b : a / b;
+    }
+    return a;
+  }
+  function addSub() {
+    let a = multiplyDivide();
+    while (tokens[pos] === "+" || tokens[pos] === "-") {
+      const op = tokens[pos++];
+      const b = multiplyDivide();
+      a = op === "+" ? a + b : a - b;
+    }
+    return a;
+  }
+
+  const answer = addSub();
+  if (pos !== tokens.length || !Number.isFinite(answer)) {
+    throw Error("I couldn't solve that. Check the calculation.");
+  }
+  return { answer, expression: s };
+}
+
+$("solveMath").addEventListener("click", () => {
+  try {
+    const result = calculate($("mathInput").value);
+    const { answer, expression } = result;
+    const out = $("mathOutput");
+    out.replaceChildren();
+
+    const title = document.createElement("strong");
+    title.textContent = "Answer: " + Number(answer.toPrecision(10));
+    out.append(title);
+
+    const steps = document.createElement("p");
+    steps.textContent =
+      "Step 1: Work out anything inside brackets first.\n" +
+      "Step 2: Calculate powers, then multiplication and division.\n" +
+      "Step 3: Calculate addition and subtraction from left to right.\n\n" +
+      "Calculation: " + expression + "\n" +
+      "Result: " + Number(answer.toPrecision(10));
+    steps.style.whiteSpace = "pre-line";
+    out.append(steps);
+
+    const note = document.createElement("p");
+    note.className = "small";
+    note.textContent = "These are the order-of-operations steps. For complex calculations, check each intermediate step yourself.";
+    out.append(note);
+  } catch (error) {
+    showMessage($("mathOutput"), error.message);
+  }
+});
+
+/* ---------------- FLASHCARD GENERATOR ---------------- */
+
+$("makeFlashcards").addEventListener("click", () => {
+  const raw = $("flashInput").value.trim();
+  const output = $("flashOutput");
+  output.replaceChildren();
+
+  if (!raw) {
+    showMessage(output, "Paste some notes first.");
+    return;
+  }
+
+  const lines = raw.split(/\n+/).map(x => x.trim()).filter(Boolean);
+  const cards = [];
+
+  for (const line of lines) {
+    const splitAt = line.indexOf(":");
+    if (splitAt > 0 && splitAt < line.length - 1) {
+      cards.push({
+        question: "What is " + line.slice(0, splitAt).trim() + "?",
+        answer: line.slice(splitAt + 1).trim()
+      });
+    } else {
+      const clean = line.replace(/[.!?]+$/, "");
+      if (clean.length > 15) {
+        cards.push({
+          question: "What do your notes say about: " + clean.slice(0, 65) + "?",
+          answer: line
+        });
+      }
+    }
+  }
+
+  if (!cards.length) {
+    showMessage(output, "I couldn't find any cards. Try writing notes as Term: definition, one per line.");
+    return;
+  }
+
+  const heading = document.createElement("p");
+  heading.textContent = cards.length + " flashcard(s) created. Click a card to reveal its answer.";
+  output.append(heading);
+
+  cards.forEach(card => {
+    const button = document.createElement("button");
+    button.className = "flashcard secondary";
+    button.style.width = "100%";
+    button.style.textAlign = "left";
+    button.style.marginTop = "8px";
+    button.textContent = "Q: " + card.question + " — Tap to reveal";
+    button.setAttribute("aria-expanded", "false");
+    button.addEventListener("click", () => {
+      const open = button.getAttribute("aria-expanded") === "true";
+      button.textContent = open
+        ? "Q: " + card.question + " — Tap to reveal"
+        : "Q: " + card.question + "\nA: " + card.answer;
+      button.style.whiteSpace = "pre-line";
+      button.setAttribute("aria-expanded", String(!open));
+    });
+    output.append(button);
+  });
+
+  const copy = document.createElement("button");
+  copy.textContent = "Copy all flashcards";
+  copy.addEventListener("click", async () => {
+    const text = cards.map(c => "Q: " + c.question + "\nA: " + c.answer).join("\n\n");
+    try {
+      await navigator.clipboard.writeText(text);
+      copy.textContent = "Copied!";
+    } catch {
+      showMessage(output, text);
+    }
+  });
+  output.append(copy);
+});
+
+/* ---------------- QUIZ GENERATOR ---------------- */
+
+$("makeQuiz").addEventListener("click", () => {
+  const raw = $("quizInput").value.trim();
+  const output = $("quizOutput");
+  output.replaceChildren();
+
+  if (!raw) {
+    showMessage(output, "Paste your notes first.");
+    return;
+  }
+
+  const sentences = raw.split(/(?<=[.!?])\s+|\n+/)
+    .map(s => s.trim())
+    .filter(s => s.length >= 12);
+
+  const facts = sentences.map(sentence => {
+    const cleaned = sentence.replace(/[.!?]+$/, "");
+    const colon = cleaned.indexOf(":");
+    if (colon > 0 && colon < 70) {
+      return {
+        question: "What does " + cleaned.slice(0, colon).trim() + " mean?",
+        answer: cleaned.slice(colon + 1).trim()
+      };
+    }
+
+    const words = cleaned.split(/\s+/);
+    const candidates = words.filter(w =>
+      w.length >= 5 &&
+      !/^(which|where|there|their|these|those|about|because|people|could|would|should|after|before)$/i.test(w)
+    );
+    if (candidates.length < 2) return null;
+
+    const answer = candidates[Math.floor(candidates.length / 2)].replace(/[,:;]+$/, "");
+    const question = cleaned.replace(answer, "________");
+    return { question: "Complete the sentence: " + question, answer };
+  }).filter(Boolean);
+
+  if (!facts.length) {
+    showMessage(output, "Add a few complete sentences or notes in Term: definition format.");
+    return;
+  }
+
+  const count = Math.min(Number($("quizCount").value), facts.length);
+  const selected = facts.slice(0, count);
+  const allAnswers = selected.map(f => f.answer);
+
+  const form = document.createElement("form");
+  form.addEventListener("submit", event => {
+    event.preventDefault();
+    let score = 0;
+    selected.forEach((fact, i) => {
+      const chosen = form.querySelector('input[name="q' + i + '"]:checked');
+      const result = form.querySelector("#result" + i);
+      const correct = chosen && chosen.value === fact.answer;
+      if (correct) score++;
+      result.textContent = correct
+        ? "Correct!"
+        : "Answer from your notes: " + fact.answer;
+      result.className = correct ? "good" : "warn";
+    });
+    const scoreBox = form.querySelector("#quizScore");
+    scoreBox.textContent = "Score: " + score + " / " + selected.length;
+  });
+
+  selected.forEach((fact, i) => {
+    const block = document.createElement("div");
+    block.className = "flashcard";
+
+    const question = document.createElement("p");
+    question.textContent = (i + 1) + ". " + fact.question;
+    block.append(question);
+
+    const options = [...new Set([
+      fact.answer,
+      ...allAnswers.filter(a => a !== fact.answer)
+    ])].sort(() => Math.random() - 0.5).slice(0, Math.min(4, allAnswers.length));
+
+    if (!options.includes(fact.answer)) options[0] = fact.answer;
+
+    options.forEach(option => {
+      const label = document.createElement("label");
+      label.style.fontWeight = "normal";
+      const radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = "q" + i;
+      radio.value = option;
+      radio.required = true;
+      radio.style.width = "auto";
+      label.append(radio, document.createTextNode(" " + option));
+      block.append(label);
+    });
+
+    const result = document.createElement("p");
+    result.id = "result" + i;
+    block.append(result);
+    form.append(block);
+  });
+
+  const submit = document.createElement("button");
+  submit.type = "submit";
+  submit.textContent = "Mark my quiz";
+  form.append(submit);
+
+  const score = document.createElement("h3");
+  score.id = "quizScore";
+  form.append(score);
+  output.append(form);
+
+  const note = document.createElement("p");
+  note.className = "small";
+  note.textContent = "This basic quiz builder uses text from your notes. Some questions may need editing, and it may not produce four different options for every question.";
+  output.append(note);
+});
+
+/* ---------------- WRITING FEEDBACK ---------------- */
+
+$("checkWriting").addEventListener("click", () => {
+  const text = $("writingInput").value.trim();
+  const output = $("writingOutput");
+  output.replaceChildren();
+
+  if (!text) {
+    showMessage(output, "Paste your writing first.");
+    return;
+  }
+
+  const sentences = text.split(/[.!?]+/).map(s => s.trim()).filter(Boolean);
+  const words = text.match(/\b[\w'-]+\b/g) || [];
+  const suggestions = [];
+
+  if (words.length < 20) {
+    suggestions.push("Your text is quite short. Add detail, examples or explanations if the task requires a developed paragraph.");
+  }
+
+  if (sentences.some(s => s.split(/\s+/).length > 30)) {
+    suggestions.push("Some sentences are very long. Consider splitting them into shorter sentences.");
+  }
+
+  if (/\bi\b/.test(text) && !/\bI\b/.test(text)) {
+    suggestions.push("Capitalisation: make sure the pronoun “I” is always capitalised.");
+  }
+
+  if (/\b(cant|dont|doesnt|didnt|isnt|wasnt|wont|wouldnt|shouldnt)\b/i.test(text)) {
+    suggestions.push("Check apostrophes in contractions, such as “can't”, “don't” and “isn't”.");
+  }
+
+  if (/\b(very good|very bad|a lot|really good)\b/i.test(text)) {
+    suggestions.push("Try replacing vague phrases with precise words or evidence.");
+  }
+
+  const persuasive = [
+    ["Rhetorical question", /\?\s*(?:$|\n)/],
+    ["Emotive language", /\b(shocking|terrible|wonderful|devastating|unfair|cruel|amazing|dangerous)\b/i],
+    ["Strong modal language", /\b(must|should|need to|have to|cannot)\b/i],
+    ["Evidence or statistics", /\b(percent|percentage|according to|research|study|survey|statistics|data)\b/i],
+    ["Inclusive language", /\b(we|us|our|together)\b/i]
+  ];
+
+  const found = persuasive.filter(([, pattern]) => pattern.test(text)).map(([name]) => name);
+
+  if (found.length) {
+    suggestions.push("Possible persuasive techniques detected: " + found.join(", ") + ". Check that they are used effectively.");
+  } else {
+    suggestions.push("If this is persuasive writing, consider whether a rhetorical question, evidence, emotive language or a clear call to action would strengthen your argument.");
+  }
+
+  if (!/[.!?]["')\]]?\s*$/.test(text)) {
+    suggestions.push("Check whether your final sentence needs a full stop or another suitable ending.");
+  }
+
+  if (!suggestions.length) {
+    suggestions.push("No obvious issues were detected by these basic checks. Read your work aloud and check it against your task criteria.");
+  }
+
+  const heading = document.createElement("strong");
+  heading.textContent = "Feedback";
+  output.append(heading);
+
+  suggestions.forEach(suggestion => {
+    const item = document.createElement("div");
+    item.className = "feedback-item";
+    item.textContent = suggestion;
+    output.append(item);
+  });
+
+  const disclaimer = document.createElement("p");
+  disclaimer.className = "small";
+  disclaimer.textContent = "This is a basic rule-based checker, not a full grammar or spelling checker. It may miss mistakes or flag something that is already correct.";
+  output.append(disclaimer);
+});
+</script>
+</body>
+</html>
