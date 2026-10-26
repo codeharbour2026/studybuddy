@@ -274,21 +274,55 @@
       row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    function sendMessage(message) {
+    async function sendMessage(message) {
       const clean = message.trim();
-      if (!clean) return;
+      if (!clean || sendBtn.disabled) return;
+
       welcome.style.display = 'none';
       cards.style.display = 'none';
       chat.classList.add('visible');
       addMessage(clean, 'user');
-      const subject = subjectSelect.value;
+
+      const selectedSubject = subjectSelect.value;
+      const subject = selectedSubject === 'Any subject' ? '' : selectedSubject;
       const level = levelSelect.value;
-      addMessage(
-        'Your interface is working! 🎉\\n\\nNext step: connect a real AI model so StudyBuddy can answer this question. The secure connection is not set up yet, so this preview does not send your message to an AI service.\\n\\nYour settings: ' + subject + ' · ' + level + ' · ' + selectedMode,
-        'assistant'
-      );
-      input.value = '';
-      input.focus();
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Thinking...';
+
+      try {
+        const response = await fetch('https://zaydhelpnas.pythonanywhere.com/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: clean,
+            subject: subject,
+            level: level,
+            mode: selectedMode
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('The server returned HTTP ' + response.status);
+        }
+
+        const data = await response.json();
+        let reply = data.reply || 'The server replied, but did not include an answer.';
+        if (data.subject) reply += '\\n\\nDetected subject: ' + data.subject;
+        if (typeof data.learned_examples === 'number') {
+          reply += '\\n\\nTraining examples: ' + data.learned_examples;
+        }
+        addMessage(reply, 'assistant');
+      } catch (error) {
+        addMessage(
+          'I could not connect to the StudyBuddy server. Please check that the PythonAnywhere web app is running and that CORS is enabled.\\n\\nTechnical detail: ' + error.message,
+          'assistant'
+        );
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = 'Send <span>↑</span>';
+        input.value = '';
+        input.focus();
+      }
     }
 
     form.addEventListener('submit', event => {
