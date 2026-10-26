@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="StudyBuddy AI helps students understand homework step by step." />
+  <title>StudyBuddy AI — Homework Helper</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --surface: #ffffff;
+      --text: #202235;
+      --muted: #777b91;
+      --line: #e8e9f2;
+      --primary: #6957e8;
+      --primary-dark: #5140c9;
+      --lavender: #f0edff;
+      --shadow: 0 12px 34px rgba(40, 35, 90, .08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text); background: var(--bg); min-height: 100vh;
+    }
+    button, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+    .app { min-height: 100vh; display: grid; grid-template-columns: 250px 1fr; }
+    aside {
+      background: #fff; border-right: 1px solid var(--line); padding: 24px 16px;
+      display: flex; flex-direction: column; gap: 28px;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 8px; }
+    .logo {
+      width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center;
+      color: white; font-size: 21px; background: linear-gradient(135deg, #8576ff, #5d4ad6);
+      box-shadow: 0 7px 15px #6957e833;
+    }
+    .brand-name { font-weight: 800; font-size: 17px; letter-spacing: -.4px; }
+    .brand-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .side-label { color: #a0a2b3; font-size: 10px; font-weight: 800; letter-spacing: 1.4px; padding: 0 12px; margin-bottom: 8px; }
+    .nav { display: grid; gap: 6px; }
+    .nav button, .subject {
+      width: 100%; border: 0; background: transparent; text-align: left; border-radius: 11px;
+      padding: 11px 12px; color: #5e6278; display: flex; align-items: center; gap: 11px; font-size: 13px;
+    }
+    .nav button:hover, .subject:hover { background: #f7f6ff; }
+    .nav button.active { background: var(--lavender); color: var(--primary); font-weight: 700; }
+    .nav-icon { width: 20px; text-align: center; font-size: 16px; }
+    .subject { padding: 9px 12px; }
+    .subject .dot { width: 9px; height: 9px; border-radius: 50%; background: #8b7bf2; }
+    .subject:nth-child(3) .dot { background: #f3ae54; }
+    .subject:nth-child(4) .dot { background: #49bda1; }
+    .subject:nth-child(5) .dot { background: #e982a9; }
+    .sidebar-note {
+      margin-top: auto; background: #f8f7ff; border: 1px solid #eeebff; border-radius: 15px;
+      padding: 14px; font-size: 12px; line-height: 1.55; color: #686582;
+    }
+    .sidebar-note strong { display: block; color: #393452; margin-bottom: 5px; }
+    main { min-width: 0; display: flex; flex-direction: column; }
+    .topbar {
+      height: 76px; padding: 0 34px; display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--line); background: rgba(255,255,255,.82);
+    }
+    .page-title { font-weight: 750; font-size: 15px; }
+    .page-subtitle { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+    .status { display: flex; gap: 7px; align-items: center; color: #6e7185; font-size: 12px; }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #37bb88; }
+    .avatar { width: 34px; height: 34px; display: grid; place-items: center; background: #eeeaff; color: #6352d5; border-radius: 50%; font-weight: 800; font-size: 12px; }
+    .content { width: min(920px, 100%); padding: 36px 30px 28px; margin: 0 auto; flex: 1; display: flex; flex-direction: column; }
+    .welcome { text-align: center; margin: 22px 0 27px; }
+    .welcome-badge { display: inline-flex; align-items: center; gap: 7px; background: #eeebff; color: #6554d5; border-radius: 99px; padding: 7px 12px; font-size: 11px; font-weight: 750; }
+    h1 { font-size: clamp(28px, 4vw, 40px); letter-spacing: -1.4px; line-height: 1.12; margin: 17px 0 10px; }
+    h1 span { color: var(--primary); }
+    .welcome p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.65; }
+    .mode-row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+    .mode {
+      border: 1px solid #e5e3f0; background: #fff; color: #696b80; border-radius: 99px;
+      padding: 9px 14px; font-size: 12px; transition: .15s;
+    }
+    .mode.active { background: var(--lavender); color: var(--primary); border-color: #d9d2ff; font-weight: 750; }
+    .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 22px; }
+    .prompt-card {
+      border: 1px solid var(--line); border-radius: 15px; background: #fff; padding: 17px;
+      text-align: left; display: flex; gap: 13px; align-items: flex-start; box-shadow: 0 2px 7px #24204a03;
+      transition: transform .15s, border-color .15s, box-shadow .15s;
+    }
+    .prompt-card:hover { transform: translateY(-2px); border-color: #d3ccff; box-shadow: var(--shadow); }
+    .prompt-icon { width: 37px; height: 37px; border-radius: 12px; display: grid; place-items: center; font-size: 18px; flex-shrink: 0; background: #f0edff; }
+    .prompt-card:nth-child(2) .prompt-icon { background: #fff4e6; }
+    .prompt-card:nth-child(3) .prompt-icon { background: #e6f8f2; }
+    .prompt-card:nth-child(4) .prompt-icon { background: #ffedf3; }
+    .prompt-card strong { display: block; font-size: 13px; margin: 1px 0 5px; }
+    .prompt-card small { display: block; font-size: 11px; color: var(--muted); line-height: 1.5; }
+    .chat { display: none; flex-direction: column; gap: 18px; padding: 4px 0 20px; }
+    .chat.visible { display: flex; }
+    .message { display: flex; gap: 10px; align-items: flex-start; max-width: 88%; }
+    .message.user { align-self: flex-end; flex-direction: row-reverse; }
+    .message .mini-avatar { flex: 0 0 31px; height: 31px; border-radius: 11px; display: grid; place-items: center; background: var(--lavender); color: var(--primary); font-size: 14px; }
+    .message.user .mini-avatar { background: #e7e8f0; color: #53566c; }
+    .bubble { background: #fff; border: 1px solid var(--line); border-radius: 4px 15px 15px 15px; padding: 13px 15px; font-size: 13px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .message.user .bubble { background: #6957e8; color: white; border-color: #6957e8; border-radius: 15px 4px 15px 15px; }
+    .composer-wrap { margin-top: auto; position: sticky; bottom: 0; padding-top: 12px; background: linear-gradient(transparent, var(--bg) 18%); }
+    .composer { border: 1px solid #e0deee; background: #fff; border-radius: 18px; box-shadow: var(--shadow); padding: 13px; }
+    .composer textarea { border: 0; outline: 0; resize: vertical; width: 100%; min-height: 48px; max-height: 180px; color: var(--text); font-size: 13px; line-height: 1.5; padding: 4px 5px; background: transparent; }
+    .composer textarea::placeholder { color: #a2a4b4; }
+    .composer-bottom { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding-top: 8px; }
+    .composer-tools { display: flex; align-items: center; gap: 8px; }
+    select {
+      border: 1px solid var(--line); border-radius: 9px; padding: 7px 9px; color: #696b80; background: #fff; font-size: 11px; outline: 0; max-width: 145px;
+    }
+    .hint { color: #a0a2b3; font-size: 10px; }
+    .send {
+      border: 0; border-radius: 11px; background: var(--primary); color: white; padding: 10px 15px;
+      display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 750;
+    }
+    .send:hover { background: var(--primary-dark); }
+    .send:disabled { opacity: .55; cursor: not-allowed; }
+    .disclaimer { text-align: center; font-size: 10px; color: #999caf; line-height: 1.5; padding: 11px 10px 0; }
+    .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #242238; color: white; padding: 11px 15px; border-radius: 11px; font-size: 12px; box-shadow: var(--shadow); display: none; z-index: 5; }
+    .toast.show { display: block; }
+    @media (max-width: 760px) {
+      .app { grid-template-columns: 1fr; }
+      aside { display: none; }
+      .topbar { height: 66px; padding: 0 18px; }
+      .content { padding: 22px 16px 20px; }
+      .welcome { margin-top: 18px; }
+      .cards { gap: 9px; }
+      .prompt-card { padding: 13px; gap: 9px; }
+      .prompt-icon { width: 31px; height: 31px; font-size: 15px; }
+      .hint { display: none; }
+      .message { max-width: 96%; }
+    }
+    @media (max-width: 430px) {
+      .cards { grid-template-columns: 1fr; }
+      .status { display: none; }
+      .composer-tools { gap: 5px; }
+      select { max-width: 115px; }
+      .send { padding: 10px 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand">
+        <div class="logo">✦</div>
+        <div><div class="brand-name">StudyBuddy AI</div><div class="brand-sub">Your homework sidekick</div></div>
+      </div>
+      <div>
+        <div class="side-label">WORKSPACE</div>
+        <nav class="nav">
+          <button class="active" id="newChatBtn"><span class="nav-icon">＋</span> New conversation</button>
+          <button id="focusBtn"><span class="nav-icon">◎</span> Study focus</button>
+        </nav>
+      </div>
+      <div>
+        <div class="side-label">SUBJECTS</div>
+        <button class="subject" data-subject="Maths"><span class="dot"></span> Maths</button>
+        <button class="subject" data-subject="English"><span class="dot"></span> English</button>
+        <button class="subject" data-subject="Science"><span class="dot"></span> Science</button>
+        <button class="subject" data-subject="History"><span class="dot"></span> History</button>
+      </div>
+      <div class="sidebar-note"><strong>💡 Learn, don't just copy</strong>StudyBuddy is designed to explain the steps so you can understand the answer and do similar questions yourself.</div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div><div class="page-title">Homework helper</div><div class="page-subtitle">A little help goes a long way.</div></div>
+        <div class="top-actions"><div class="status"><span class="status-dot"></span> Interface preview</div><div class="avatar">SB</div></div>
+      </header>
+
+      <section class="content">
+        <div class="welcome" id="welcome">
+          <div class="welcome-badge">✦ YOUR PERSONAL STUDY ASSISTANT</div>
+          <h1>Let's make homework<br><span>make sense.</span></h1>
+          <p>Ask a question, explore a tricky topic, or practise for your next test.<br>We'll work through it one step at a time.</p>
+        </div>
+
+        <div class="mode-row" aria-label="Choose a help mode">
+          <button class="mode active" data-mode="Explain">📘 Explain a topic</button>
+          <button class="mode" data-mode="Check my answer">✓ Check my answer</button>
+          <button class="mode" data-mode="Quiz me">⚡ Quiz me</button>
+          <button class="mode" data-mode="Summarise notes">≡ Summarise notes</button>
+        </div>
+
+        <div class="cards" id="promptCards">
+          <button class="prompt-card" data-prompt="Can you explain how to solve a maths equation step by step?">
+            <span class="prompt-icon">🧮</span><span><strong>Make maths click</strong><small>Break a tricky problem into easy steps.</small></span>
+          </button>
+          <button class="prompt-card" data-prompt="Help me improve an English paragraph. Explain what I could improve and why.">
+            <span class="prompt-icon">✍️</span><span><strong>Improve my writing</strong><small>Get feedback on grammar, structure and ideas.</small></span>
+          </button>
+          <button class="prompt-card" data-prompt="Explain a science topic in simple language and give me an example.">
+            <span class="prompt-icon">🧪</span><span><strong>Understand science</strong><small>Learn the idea behind the facts.</small></span>
+          </button>
+          <button class="prompt-card" data-prompt="Make a short practice quiz for me and ask one question at a time.">
+            <span class="prompt-icon">🎯</span><span><strong>Prepare for a test</strong><small>Practise questions and build confidence.</small></span>
+          </button>
+        </div>
+
+        <div class="chat" id="chat" aria-live="polite"></div>
+
+        <div class="composer-wrap">
+          <form class="composer" id="chatForm">
+            <textarea id="messageInput" rows="2" placeholder="Ask your homework question... (e.g. Why do seasons happen?)" aria-label="Your homework question"></textarea>
+            <div class="composer-bottom">
+              <div class="composer-tools">
+                <select id="subjectSelect" aria-label="Subject">
+                  <option>Any subject</option><option>Maths</option><option>English</option><option>Science</option><option>History</option><option>Geography</option><option>Other</option>
+                </select>
+                <select id="levelSelect" aria-label="School level">
+                  <option>Explain simply</option><option>Primary school</option><option>High school</option><option>More advanced</option>
+                </select>
+                <span class="hint">Enter to send · Shift+Enter for a new line</span>
+              </div>
+              <button class="send" id="sendBtn" type="submit">Send <span>↑</span></button>
+            </div>
+          </form>
+          <div class="disclaimer">StudyBuddy can make mistakes. Check important answers with your teacher or textbook.</div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    const form = document.getElementById('chatForm');
+    const input = document.getElementById('messageInput');
+    const chat = document.getElementById('chat');
+    const welcome = document.getElementById('welcome');
+    const cards = document.getElementById('promptCards');
+    const sendBtn = document.getElementById('sendBtn');
+    const subjectSelect = document.getElementById('subjectSelect');
+    const levelSelect = document.getElementById('levelSelect');
+    const toast = document.getElementById('toast');
+    let selectedMode = 'Explain';
+    let toastTimer;
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+    }
+
+    function setMode(mode) {
+      selectedMode = mode;
+      document.querySelectorAll('.mode').forEach(button => {
+        button.classList.toggle('active', button.dataset.mode === mode);
+      });
+      const prompts = {
+        'Explain': 'Ask me about a topic and I’ll help break it down...',
+        'Check my answer': 'Paste your answer and the original question...',
+        'Quiz me': 'Choose a topic you want to practise...',
+        'Summarise notes': 'Paste your notes and tell me what you need...'
+      };
+      input.placeholder = prompts[mode];
+      input.focus();
+    }
+
+    function addMessage(text, who) {
+      const row = document.createElement('div');
+      row.className = 'message ' + who;
+      const avatar = document.createElement('div');
+      avatar.className = 'mini-avatar';
+      avatar.textContent = who === 'user' ? 'You' : '✦';
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.textContent = text;
+      row.append(avatar, bubble);
+      chat.appendChild(row);
+      chat.scrollTop = chat.scrollHeight;
+      row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function sendMessage(message) {
+      const clean = message.trim();
+      if (!clean) return;
+      welcome.style.display = 'none';
+      cards.style.display = 'none';
+      chat.classList.add('visible');
+      addMessage(clean, 'user');
+      const subject = subjectSelect.value;
+      const level = levelSelect.value;
+      addMessage(
+        'Your interface is working! 🎉\\n\\nNext step: connect a real AI model so StudyBuddy can answer this question. The secure connection is not set up yet, so this preview does not send your message to an AI service.\\n\\nYour settings: ' + subject + ' · ' + level + ' · ' + selectedMode,
+        'assistant'
+      );
+      input.value = '';
+      input.focus();
+    }
+
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      sendMessage(input.value);
+    });
+
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        form.requestSubmit();
+      }
+    });
+
+    document.querySelectorAll('.mode').forEach(button => {
+      button.addEventListener('click', () => setMode(button.dataset.mode));
+    });
+
+    document.querySelectorAll('.prompt-card').forEach(button => {
+      button.addEventListener('click', () => {
+        input.value = button.dataset.prompt;
+        input.focus();
+      });
+    });
+
+    document.querySelectorAll('.subject').forEach(button => {
+      button.addEventListener('click', () => {
+        subjectSelect.value = button.dataset.subject;
+        input.focus();
+        showToast(button.dataset.subject + ' selected');
+      });
+    });
+
+    document.getElementById('newChatBtn').addEventListener('click', () => {
+      chat.innerHTML = '';
+      chat.classList.remove('visible');
+      welcome.style.display = '';
+      cards.style.display = '';
+      input.value = '';
+      input.focus();
+    });
+
+    document.getElementById('focusBtn').addEventListener('click', () => {
+      setMode('Quiz me');
+      showToast('Study focus selected — choose a topic to practise.');
+    });
+  </script>
+</body>
+</html>
